@@ -1,0 +1,40 @@
+select  persona.nombre,count(Participa.rut) as participaciones 
+from Lugar,EstaEn, Participa, Persona
+where Lugar.nombrePais = 'Honduras' 
+      and Persona.rut = Participa.rut
+      and Participa.idTaller = EstaEn.idTaller 
+      and EstaEn.idLugar = lugar.id
+group by persona.rut, persona.nombre
+having participaciones = ( select max (T1.conteo)
+                           from (select Pe.nombre, count(Pa.rut) as conteo
+                                 from Lugar as L,EstaEn as EE, Participa as Pa, Persona as Pe
+                                 where L.nombrePais = 'Honduras' 
+                                       and L.id = EE.idLugar
+                                       and EE.idTaller = Pa.idTaller
+                                       and Pa.rut = Pe.rut
+                                 group  by PE.nombre) as T1)
+
+p2
+select T3.deporte
+from (select t2.deporte as deporte, max(T2.cantidad) 
+      from (select TallerDeportivo.id,TallerDeportivo.nombreTaller, TallerDeportivo.deporte, count(participa.rut) as cantidad
+              from TallerDeportivo, Participa
+              where TallerDeportivo.id = Participa.idTaller
+              group by TallerDeportivo.id) as T2) as T3
+p3
+select TallerInstrumental.id, TallerInstrumental.instrumento, count(persona.rut) as Num_per
+from persona, TallerInstrumental, participa
+where persona.correo like '%@UC%'
+      and persona.rut = participa.rut
+      and participa.idTaller = TallerInstrumental.id
+group by TallerInstrumental.id, TallerInstrumental.instrumento
+p4
+select persona.nombre, count(talleres.id) as taller
+from persona, participa, (select TallerInstrumental.id, TallerInstrumental.nombreTaller
+                            from TallerInstrumental
+                            union 
+                            select tallerDeportivo.id, tallerDeportivo.nombreTaller 
+                            from tallerDeportivo) as talleres
+where persona.rut = participa.rut
+and participa.idTaller = talleres.id
+group by persona.nombre
